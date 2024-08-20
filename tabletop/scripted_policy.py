@@ -2,8 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from pyquaternion import Quaternion
 
-from constants import SIM_TASK_CONFIGS
-from ee_sim_env import make_ee_sim_env
+from tabletop.constants import SIM_TASK_CONFIGS
+from tabletop.ee_sim_env import make_ee_sim_env
 import random
 
 import IPython

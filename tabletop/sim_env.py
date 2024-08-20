@@ -7,11 +7,11 @@ from dm_control.rl import control
 from dm_control.suite import base
 import random
 
-from constants import DT, XML_DIR, START_ARM_POSE, ONEARM_START_ARM_POSE
-from constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
-from constants import MASTER_GRIPPER_POSITION_NORMALIZE_FN
-from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
-from constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
+from tabletop.constants import DT, XML_DIR, START_ARM_POSE, ONEARM_START_ARM_POSE
+from tabletop.constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
+from tabletop.constants import MASTER_GRIPPER_POSITION_NORMALIZE_FN
+from tabletop.constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
+from tabletop.constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
 import IPython
 e = IPython.embed
@@ -110,9 +110,9 @@ class OneArmViperXTask(base.Task):
         obs['qvel'] = self.get_qvel(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=240, width=320, camera_id='top')
-        obs['images']['angle'] = physics.render(height=240, width=320, camera_id='angle')
-        obs['images']['vis'] = physics.render(height=240, width=320, camera_id='front_close')
+        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
+        obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
 
         return obs
 
@@ -468,9 +468,9 @@ class OneArmCleanTask(OneArmViperXTask):
         obs['env_state'] = self.get_env_state(physics)
         obs['obj_dict'] = self.get_obj_dict(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=240, width=320, camera_id='top')
-        obs['images']['angle'] = physics.render(height=240, width=320, camera_id='angle')
-        obs['images']['vis'] = physics.render(height=240, width=320, camera_id='front_close')
+        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
+        obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
         
         obs['language_instruction'] = 'clean the table'
         return obs

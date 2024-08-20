@@ -131,6 +131,9 @@ celerybeat.pid
 # mkdocs documentation
 /site
 
+#
+*.egg-info/
+
 # mypy
 .mypy_cache/
 .dmypy.json

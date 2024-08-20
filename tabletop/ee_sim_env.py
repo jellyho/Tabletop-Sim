@@ -2,13 +2,13 @@ import numpy as np
 import collections
 import os
 import random
-from constants import DT, XML_DIR, START_ARM_POSE, ONEARM_START_ARM_POSE
-from constants import PUPPET_GRIPPER_POSITION_CLOSE
-from constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
-from constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
-from constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
+from tabletop.constants import DT, XML_DIR, START_ARM_POSE, ONEARM_START_ARM_POSE
+from tabletop.constants import PUPPET_GRIPPER_POSITION_CLOSE
+from tabletop.constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
+from tabletop.constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
+from tabletop.constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
-from utils import sample_box_pose, sample_insertion_pose
+from tabletop.utils import sample_box_pose, sample_insertion_pose
 from dm_control import mujoco
 from dm_control.rl import control
 from dm_control.suite import base
@@ -168,9 +168,9 @@ class OneArmViperXEETask(base.Task):
         obs['ee_vel'] = self.get_eevel(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=240, width=320, camera_id='top')
-        obs['images']['angle'] = physics.render(height=240, width=320, camera_id='angle')
-        obs['images']['vis'] = physics.render(height=240, width=320, camera_id='front_close')
+        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
+        obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
         # used in scripted policy to obtain starting pose
         obs['mocap_pose_left'] = np.concatenate([physics.data.mocap_pos[0], physics.data.mocap_quat[0]]).copy()
 
@@ -239,9 +239,9 @@ class OneArmCleanEETask(OneArmViperXEETask):
         obs['env_state'] = self.get_env_state(physics)
         obs['obj_dict'] = self.get_obj_dict(physics)
         obs['images'] = dict()
-        obs['images']['top'] = physics.render(height=240, width=320, camera_id='top')
-        obs['images']['angle'] = physics.render(height=240, width=320, camera_id='angle')
-        obs['images']['vis'] = physics.render(height=240, width=320, camera_id='front_close')
+        obs['images']['top'] = physics.render(height=480, width=640, camera_id='top')
+        obs['images']['angle'] = physics.render(height=480, width=640, camera_id='angle')
+        obs['images']['vis'] = physics.render(height=480, width=640, camera_id='front_close')
         # used in scripted policy to obtain starting pose
     
         obs['mocap_pose_left'] = np.concatenate([physics.data.mocap_pos[0], physics.data.mocap_quat[0]]).copy()
