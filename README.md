@@ -62,7 +62,6 @@ https://github.com/user-attachments/assets/f32b7a60-f768-453a-a839-5d7cdb5d69a4
 There are 4 objects in total. Order and posistion of objects are all randomized. Language annotation included.
 
 
-https://github.com/user-attachments/assets/6312c212-d726-4457-bd31-7820c29feb78
-
+https://github.com/user-attachments/assets/22d5190b-02b7-42a0-b77a-07039b7b4b3c
 
 
