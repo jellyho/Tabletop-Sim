@@ -1,0 +1,9 @@
+ <mujocoinclude>
+  <asset>
+    <texture type="2d" name="bottle1" file="BotellaText.png"/>
+    <texture type="2d" name="bottle2" file="BotellaText2.png"/>
+    <material name="bottle1" texture="bottle1" specular="0.0" shininess="0.01"/>
+    <material name="bottle2" texture="bottle2" specular="0.0" shininess="0.01"/>
+    <!-- <mesh name="bottle1" file="Corona.obj" scale="0.006 0.006 0.006"/> -->
+  </asset>
+ </mujocoinclude>

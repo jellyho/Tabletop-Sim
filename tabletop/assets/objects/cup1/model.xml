@@ -1,0 +1,39 @@
+ <mujocoinclude>
+    <body name="cup1" quat="0 0 0.7446431 0.6674628">
+      <joint name="cup1_joint" type="free" frictionloss="0.01" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+      <geom material="cup1" mesh="cup1" type="mesh" contype="0" conaffinity="0" group="2"/>
+      <geom mesh="cup1_collision_0" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_1" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_2" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_3" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_4" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_5" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_6" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_7" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_8" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_9" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_10" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_11" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_12" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_13" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_14" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_15" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_16" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_17" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_18" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_19" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_20" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_21" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_22" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_23" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_24" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_25" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_26" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_27" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_28" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_29" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_30" type="mesh" group="3"/>
+      <geom mesh="cup1_collision_31" type="mesh" group="3"/>
+    </body>
+ </mujocoinclude>

@@ -1,25 +1,7 @@
-# Tabletop-SIM: Extended Simulation for ACT
-This repo contains the implementation of Original ACT,
-with one more simulation(3 total).
-
-### Repo Structure
-- ``imitate_episodes.py`` Train and Evaluate ACT
-- ``policy.py`` An adaptor for ACT policy
-- ``detr`` Model definitions of ACT, modified from DETR
-- ``sim_env.py`` Mujoco + DM_Control environments with joint space control
-- ``ee_sim_env.py`` Mujoco + DM_Control environments with EE space control
-- ``scripted_policy.py`` Scripted policies for sim environments
-- ``constants.py`` Constants shared across files
-- ``utils.py`` Utils such as data loading and helper functions
-- ``visualize_episodes.py`` Save videos from a .hdf5 dataset
-
+# Tabletop-SIM: Extended Simulation for ACT or other IL methods
+This repo contains the implementation of simulation from Original ACT, added more simulation.
 
 ### Installation
-
-    conda create -n aloha python=3.8.10
-    conda activate aloha
-    pip install torchvision
-    pip install torch
     pip install pyquaternion
     pip install pyyaml
     pip install rospkg
@@ -32,7 +14,7 @@ with one more simulation(3 total).
     pip install packaging
     pip install h5py
     pip install ipython
-    cd act/detr && pip install -e .
+    pip install -e .
 
 ### Simulated experiments
 
@@ -40,22 +22,39 @@ List of sims:
 1. ``sim_transfer_cube_scripted``
 2. ``sim_insertion_scripted``
 3. ``sim_clean``
+4. ``sim_onearm_clean``
 
 To generated 50 episodes of scripted data, run:
-
+```
+    cd scripts
     python3 record_sim_episodes.py \
-    --task_name sim_transfer_cube_scripted \
+    --task_name sim_clean \
     --dataset_dir <data save dir> \
     --num_episodes 50
+```
+
+or for onearm task, 
+
+```
+    cd scripts
+    python3 record_sim_episodes_onearm.py \
+    --task_name sim_onearm_clean \
+    --dataset_dir <data save dir> \
+    --num_episodes 50
+```
 
 To can add the flag ``--onscreen_render`` to see real-time rendering.
 To visualize the episode after it is collected, run
-
+```
+    cd scripts
     python3 visualize_episodes.py --dataset_dir <data save dir> --episode_idx 0
-
+```
 ### Simulation in detail
 
-There are 8 objects in total. Order and position of objecs are all randomized.
-![img0](rm_imgs/output_image0.png)
-![img1](rm_imgs/output_image5.png)
-![img2](rm_imgs/output_image9.png)
+**sim_clean**
+There are 8 objects in total. Order and position of objects are all randomized.
+![img0](imgs/sim_clean.mp4)
+
+**sim_onearm_clean**
+There are 4 objects in total. Order and posistion of objects are all randomized. Language annotation included.
+![img1](imgs/sim_onearm_clean.mp4)

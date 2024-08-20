@@ -1,0 +1,26 @@
+ <mujocoinclude>  
+  <asset>
+    <material name="lambert3SG" specular="0.5" shininess="0.5" rgba="0.50 0.50 0.50 1.0"/>
+    <texture type="2d" name="659c699777a21252e6f2d4d7f861d029" file="659c699777a21252e6f2d4d7f861d029.png"/>
+    <material name="lambert7SG" texture="659c699777a21252e6f2d4d7f861d029" specular="0.5" shininess="0.5"/>
+    <material name="lambert9SG" texture="659c699777a21252e6f2d4d7f861d029" specular="0.5" shininess="0.5"/>
+    <texture type="2d" name="screenshot2016-06-0711.04.32" file="screenshot2016-06-0711.04.32.png"/>
+    <material name="lambert10SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+    <material name="lambert11SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+    <material name="lambert16SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+
+    <material name="2lambert3SG" specular="0.5" shininess="0.5" rgba="0.50 0.50 0.50 1.0"/>
+    <texture type="2d" name="659c699777a21252e6f2d4d7f861d028" file="659c699777a21252e6f2d4d7f861d028.png"/>
+    <material name="2lambert7SG" texture="659c699777a21252e6f2d4d7f861d028" specular="0.5" shininess="0.5"/>
+    <material name="2lambert9SG" texture="659c699777a21252e6f2d4d7f861d028" specular="0.5" shininess="0.5"/>
+    <material name="2lambert10SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+    <material name="2lambert11SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+    <material name="2lambert16SG" texture="screenshot2016-06-0711.04.32" specular="0.5" shininess="0.5"/>
+    <mesh file="coke_0.obj" scale="0.0225 0.0225 0.02"/>
+    <mesh file="coke_1.obj" scale="0.0225 0.0225 0.02"/>
+    <mesh file="coke_2.obj" scale="0.0225 0.0225 0.02"/>
+    <mesh file="coke_3.obj" scale="0.0225 0.0225 0.02"/>
+    <mesh file="coke_4.obj" scale="0.0225 0.0225 0.02"/>
+    <mesh file="coke_5.obj" scale="0.0225 0.0225 0.02"/>
+  </asset>
+ </mujocoinclude>

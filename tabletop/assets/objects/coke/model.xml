@@ -1,0 +1,18 @@
+ <mujocoinclude>  
+  <body name="can1">
+    <joint name="can1_joint" type="free" frictionloss="0.01" />
+    <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+    <geom mesh="coke_0" material="lambert3SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_1" material="lambert11SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_2" material="lambert7SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_3" material="lambert16SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_4" material="lambert10SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_5" material="lambert9SG" group="2" type="mesh" contype="0" conaffinity="0"/>
+    <geom mesh="coke_0" group="3" type="mesh"/>
+    <geom mesh="coke_1" group="3" type="mesh"/>
+    <geom mesh="coke_2" group="3" type="mesh"/>
+    <geom mesh="coke_3" group="3" type="mesh"/>
+    <geom mesh="coke_4" group="3" type="mesh"/>
+    <geom mesh="coke_5" group="3" type="mesh"/>
+  </body>
+ </mujocoinclude>  
