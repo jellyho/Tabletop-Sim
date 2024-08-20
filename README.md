@@ -55,10 +55,11 @@ To visualize the episode after it is collected, run
 
 There are 8 objects in total. Order and position of objects are all randomized.
 
-[![img0](imgs/sim_clean.mp4)]
+https://github.com/user-attachments/assets/f32b7a60-f768-453a-a839-5d7cdb5d69a4
 
 **sim_onearm_clean**
 
 There are 4 objects in total. Order and posistion of objects are all randomized. Language annotation included.
 
-[![img1](imgs/sim_onearm_clean.mp4)]
+https://github.com/user-attachments/assets/eff5784f-8ade-491e-8da0-c2398fab2297
+
