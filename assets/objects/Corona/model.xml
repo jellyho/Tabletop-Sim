@@ -1,0 +1,8 @@
+ <mujocoinclude>
+    <body name="bottle1">
+      <joint name="bottle1_joint" type="free" frictionloss="0.01" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+      <geom material="bottle1" mesh="bottle1" group="2" type="mesh" contype="0" conaffinity="0"/>
+      <geom mesh="bottle1" group="3" type="mesh"/>
+    </body>
+ </mujocoinclude>

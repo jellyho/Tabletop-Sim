@@ -1,0 +1,39 @@
+ <mujocoinclude>
+    <body name="bowl2" pos="0 0.8 0.1" quat="0 0 0 1">
+      <joint name="bowl2_joint" type="free" frictionloss="0.01" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+      <geom material="bowl2" mesh="bowl2" type="mesh" contype="0" conaffinity="0" group="2"/>
+      <geom mesh="bowl2_collision_0" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_1" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_2" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_3" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_4" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_5" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_6" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_7" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_8" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_9" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_10" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_11" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_12" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_13" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_14" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_15" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_16" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_17" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_18" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_19" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_20" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_21" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_22" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_23" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_24" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_25" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_26" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_27" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_28" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_29" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_30" type="mesh" group="3"/>
+      <geom mesh="bowl2_collision_31" type="mesh" group="3"/>
+  </body>
+</mujocoinclude>

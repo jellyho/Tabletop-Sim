@@ -1,0 +1,88 @@
+<mujoco>
+    <include file="scene.xml"/>
+    <include file="vx300s_dependencies.xml"/>
+    <include file="objects/basket/assets.xml"/>
+    <include file="objects/bowl_sand/assets.xml"/>
+    <!-- <include file="objects/white_bowl/assets.xml"/> -->
+    <!-- <include file="objects/cup1/assets.xml"/> -->
+    <include file="objects/cup2/assets.xml"/>
+    <!-- <include file="objects/Corona/assets.xml"/> -->
+    <include file="objects/coke/assets.xml"/>
+
+    <!-- <equality>
+        <weld body1="mocap_left" body2="vx300s_left/gripper_link" solref="0.01 1" solimp="0.97 0.97 0.004" />
+        <weld body1="mocap_right" body2="vx300s_right/gripper_link" solref="0.01 1" solimp="0.97 0.97 0.004" />
+    </equality> -->
+
+    <asset>
+        <mesh file="objects/can.obj" scale="0.007 0.007 0.007" />
+        <mesh file="objects/Corona.obj" scale="0.005 0.005 0.005" />
+    </asset>
+
+
+
+    <worldbody>
+        <include file="vx300s_left.xml" />
+        <!-- <include file="vx300s_right.xml" /> -->
+        <include file="objects/basket/model.xml" />
+
+        <!-- <body mocap="true" name="mocap_left" pos="0.2 0.50 0.425">
+            <site pos="0 0 0" size="0.003 0.003 0.03" type="box" name="mocap_left_site1" rgba="1 0 0 1"/>
+            <site pos="0 0 0" size="0.003 0.03 0.003" type="box" name="mocap_left_site2" rgba="0 1 0 1"/>
+            <site pos="0 0 0" size="0.03 0.003 0.003" type="box" name="mocap_left_site3" rgba="0 0 1 1"/>
+        </body>
+        <body mocap="true" name="mocap_right" pos="-0.2 0.50 0.425">
+            <site pos="0 0 0" size="0.003 0.003 0.03" type="box" name="mocap_right_site1" rgba="1 0 0 1"/>
+            <site pos="0 0 0" size="0.003 0.03 0.003" type="box" name="mocap_right_site2" rgba="0 1 0 1"/>
+            <site pos="0 0 0" size="0.03 0.003 0.003" type="box" name="mocap_right_site3" rgba="0 0 1 1"/>
+        </body> -->
+
+        <include file="objects/bowl_sand/model.xml" />
+        <!-- <include file="objects/white_bowl/model.xml" /> -->
+        <!-- <include file="objects/cup1/model.xml" /> -->
+        <include file="objects/cup2/model.xml" />
+        <!-- <body name="bottle1" pos="0.1 0.5 0.1" quat="0 0 0 1">
+            <joint name="bottle1_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+            <geom type="mesh" mesh="Corona" material="bottle1"/>
+        </body> -->
+        <!-- <body name="bottle2" pos="0 0.6 0.1" quat="0 0 0 1">
+            <joint name="bottle2_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+            <geom type="mesh" mesh="Corona" material="bottle2"/>
+        </body> -->
+        <body name="can1" pos="0.1 0.3 0.1" quat="0 0 0 1">
+            <joint name="can1_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+            <geom type="mesh" mesh="can" material="lambert7SG"/>
+        </body>
+        <body name="can2" pos="0.1 0.7 0.1" quat="0 0 0 1">
+            <joint name="can2_joint" type="free" frictionloss="0.01" />
+            <inertial pos="0 0 0" mass="0.1" diaginertia="0.002 0.002 0.002" />
+            <geom type="mesh" mesh="can"  material="2lambert7SG"/>
+        </body>
+
+
+    </worldbody>
+
+    <actuator>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="-1.85005 1.25664" joint="vx300s_left/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-1.76278 1.6057" joint="vx300s_left/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.8675 2.23402" joint="vx300s_left/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_left/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_left/left_finger" kp="1000"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_left/right_finger" kp="1000"  user="1"/>
+
+        <!-- <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/waist" kp="800"  user="1" forcelimited="true" forcerange="-150 150"/>
+        <position ctrllimited="true" ctrlrange="-1.85005 1.25664" joint="vx300s_right/shoulder" kp="1600"  user="1" forcelimited="true" forcerange="-300 300"/>
+        <position ctrllimited="true" ctrlrange="-1.76278 1.6057" joint="vx300s_right/elbow" kp="800"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/forearm_roll" kp="10"  user="1" forcelimited="true" forcerange="-100 100"/>
+        <position ctrllimited="true" ctrlrange="-1.8675 2.23402" joint="vx300s_right/wrist_angle" kp="50"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-3.14158 3.14158" joint="vx300s_right/wrist_rotate" kp="20"  user="1"/>
+        <position ctrllimited="true" ctrlrange="0.021 0.057" joint="vx300s_right/left_finger" kp="1000"  user="1"/>
+        <position ctrllimited="true" ctrlrange="-0.057 -0.021" joint="vx300s_right/right_finger" kp="1000"  user="1"/> -->
+
+    </actuator>
+</mujoco>
