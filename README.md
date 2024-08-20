@@ -1,4 +1,4 @@
-# ACT-SIM: Extended Simulation for ACT
+# Tabletop-SIM: Extended Simulation for ACT
 This repo contains the implementation of Original ACT,
 with one more simulation(3 total).
 
