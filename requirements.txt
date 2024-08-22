@@ -2,8 +2,8 @@ pyquaternion
 pyyaml
 rospkg
 pexpect
-mujoco==2.3.7
-dm_control==1.0.14
+mujoco==3.2.0
+dm_control==1.0.21
 opencv-python
 matplotlib
 einops
