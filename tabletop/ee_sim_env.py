@@ -8,6 +8,7 @@ from tabletop.constants import PUPPET_GRIPPER_POSITION_UNNORMALIZE_FN
 from tabletop.constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
 from tabletop.constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
+from tabletop.wrappers import *
 from tabletop.utils import sample_box_pose, sample_insertion_pose
 from dm_control import mujoco
 from dm_control.rl import control
@@ -19,7 +20,7 @@ import IPython
 e = IPython.embed
 
 
-def make_ee_sim_env(task_name):
+def make_ee_sim_env(task_name, action_type='quat_abs'):
     """
     Environment for simulated robot bi-manual manipulation, with end-effector control.
     Action space:      [left_arm_pose (7),             # position and quaternion for end effector
@@ -52,7 +53,14 @@ def make_ee_sim_env(task_name):
     elif 'sim_onearm_clean' in task_name:
         xml_path = os.path.join(XML_DIR, f'onearm_viperx_ee_clean.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = OneArmCleanEETask(random=False)
+        if action_type == 'rpy_pos':
+            task = get_onearm_ee_rpy_pos_wrapper(OneArmCleanEETask)
+        elif action_type == 'rpy_vel':
+            task = get_onearm_ee_rpy_vel_wrapper(OneArmCleanEETask)
+        elif action_type == 'quat_vel':
+            task = get_onearm_ee_vel_wrapper(OneArmCleanEETask)
+        else:
+            task = OneArmCleanEETask(random=False)
         env = control.Environment(physics, task, time_limit=20, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     elif 'sim_insertion' in task_name:
@@ -71,7 +79,8 @@ class OneArmViperXEETask(base.Task):
 
     def before_step(self, action, physics):
         action_left = action
-
+        self.prev_action = action
+        # print('input', action)
         # set mocap position and quat
         np.copyto(physics.data.mocap_pos[0], action_left[:3])
         np.copyto(physics.data.mocap_quat[0], action_left[3:7])
@@ -86,6 +95,7 @@ class OneArmViperXEETask(base.Task):
 
         np.copyto(physics.data.mocap_pos[0], [-0.31718881, 0.5, 0.29525084])
         np.copyto(physics.data.mocap_quat[0], [1, 0, 0, 0])
+        self.prev_mocap_action = np.concatenate([physics.data.mocap_pos[0].copy(), physics.data.mocap_quat[0].copy()])
         self.prev_mocap_pos = physics.data.mocap_pos[0].copy()
         self.prev_mocap_quat = physics.data.mocap_quat[0].copy()
 
@@ -116,44 +126,25 @@ class OneArmViperXEETask(base.Task):
         left_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(left_qvel_raw[6])]
         return np.concatenate([left_arm_qvel, left_gripper_qvel])
 
-    @staticmethod
-    def get_eepos(physics):
-        eepos_raw = physics.data.mocap_pos[0].copy()
-        eequat_raw = physics.data.mocap_quat[0].copy()
+    def get_eepos(self, physics):
+        ee_pos_raw = physics.data.mocap_pos[0].copy()
+        ee_quat_raw = physics.data.mocap_quat[0].copy()
+        
         qpos_raw = physics.data.qpos.copy()
         left_qpos_raw = qpos_raw[:8]
         left_gripper_qpos = [PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[6])]
-        return np.concatenate([eepos_raw, eequat_raw, left_gripper_qpos])
-
-    
-    def get_eevel(self, physics):
-        eepos_raw = physics.data.mocap_pos[0].copy() - self.prev_mocap_pos
-        eequat_raw = physics.data.mocap_quat[0].copy() - self.prev_mocap_quat
-        qvel_raw = physics.data.qvel.copy()
-        left_qvel_raw = qvel_raw[:8]
-        left_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(left_qvel_raw[6])]
-        return np.concatenate([eepos_raw, eequat_raw, left_gripper_qvel])
+        return np.concatenate([ee_pos_raw, ee_quat_raw, left_gripper_qpos])
         
     @staticmethod
-    def get_eepos_euler(physics):
-        eepos_raw = physics.data.mocap_pos[0].copy()
-        eequat_raw = physics.data.mocap_quat[0].copy()
-
+    def get_eepos_rpy(physics):
+        ee_pos_raw = physics.data.mocap_pos[0].copy()
+        ee_quat_raw = physics.data.mocap_quat[0].copy()
+        ee_rpy_raw = quat_to_rpy(ee_quat_raw[0], ee_quat_raw[1], ee_quat_raw[2], ee_quat_raw[3])
+        
         qpos_raw = physics.data.qpos.copy()
         left_qpos_raw = qpos_raw[:8]
         left_gripper_qpos = [PUPPET_GRIPPER_POSITION_NORMALIZE_FN(left_qpos_raw[6])]
-        return np.concatenate([eepos_raw, eequat_raw, left_gripper_qpos])
-
-    
-    def get_eevel_euler(self, physics):
-        eepos_raw = physics.data.mocap_pos[0].copy() - self.prev_mocap_pos
-        eequat_raw = physics.data.mocap_quat[0].copy() - self.prev_mocap_quat
-        
-        qvel_raw = physics.data.qvel.copy()
-        left_qvel_raw = qvel_raw[:8]
-        left_gripper_qvel = [PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN(left_qvel_raw[6])]
-        return np.concatenate([eepos_raw, eequat_raw, left_gripper_qvel])
-
+        return np.concatenate([ee_pos_raw, ee_rpy_raw, left_gripper_qpos])
 
     @staticmethod
     def get_env_state(physics):
@@ -165,7 +156,7 @@ class OneArmViperXEETask(base.Task):
         obs['qpos'] = self.get_qpos(physics)
         obs['qvel'] = self.get_qvel(physics)
         obs['ee_pos'] = self.get_eepos(physics)
-        obs['ee_vel'] = self.get_eevel(physics)
+        obs['ee_rpy_pos'] = self.get_eepos_rpy(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['images'] = dict()
         obs['images']['top'] = physics.render(height=240, width=320, camera_id='top')
@@ -176,9 +167,6 @@ class OneArmViperXEETask(base.Task):
 
         # used when replaying joint trajectory
         obs['gripper_ctrl'] = physics.data.ctrl.copy()
-
-        self.prev_mocap_pos = physics.data.mocap_pos[0].copy()
-        self.prev_mocap_quat = physics.data.mocap_quat[0].copy()
         return obs
 
     def get_reward(self, physics):
@@ -235,7 +223,7 @@ class OneArmCleanEETask(OneArmViperXEETask):
         obs['qpos'] = self.get_qpos(physics)
         obs['qvel'] = self.get_qvel(physics)
         obs['ee_pos'] = self.get_eepos(physics)
-        obs['ee_vel'] = self.get_eevel(physics)
+        obs['ee_rpy_pos'] = self.get_eepos_rpy(physics)
         obs['env_state'] = self.get_env_state(physics)
         obs['obj_dict'] = self.get_obj_dict(physics)
         obs['images'] = dict()
@@ -313,13 +301,7 @@ class BimanualViperXEETask(base.Task):
     def initialize_robots(self, physics):
         # reset joint position
         physics.named.data.qpos[:16] = START_ARM_POSE
-
-        # reset mocap to align with end effector
-        # to obtain these numbers:
-        # (1) make an ee_sim env and reset to the same start_pose
-        # (2) get env._physics.named.data.xpos['vx300s_left/gripper_link']
-        #     get env._physics.named.data.xquat['vx300s_left/gripper_link']
-        #     repeat the same for right side
+        
         np.copyto(physics.data.mocap_pos[0], [-0.31718881, 0.5, 0.29525084])
         np.copyto(physics.data.mocap_quat[0], [1, 0, 0, 0])
         # right

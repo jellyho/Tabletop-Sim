@@ -9,6 +9,8 @@ from tabletop.constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN, SIM_TASK_CO
 from tabletop.ee_sim_env import make_ee_sim_env
 from tabletop.sim_env import make_sim_env, BOX_POSE
 from tabletop.scripted_policy import PickAndTransferPolicy, InsertionPolicy, CleanPolicy, OneArmCleanPolicy
+from tabletop.wrappers import quat_to_rpy, rpy_to_quat
+from pyquaternion import Quaternion
 
 import IPython
 e = IPython.embed
@@ -30,7 +32,7 @@ def main(args):
     inject_noise = False
     render_cam_name = 'angle'
 
-    real_dix = 0
+    real_idx = 0
 
     if not os.path.isdir(dataset_dir):
         os.makedirs(dataset_dir, exist_ok=True)
@@ -44,6 +46,7 @@ def main(args):
         raise NotImplementedError
 
     success = []
+    real_idx = 0
     for episode_idx in range(num_episodes):
         print(f'{episode_idx=}')
         print('Rollout out EE space scripted policy')
@@ -54,19 +57,19 @@ def main(args):
         policy = policy_cls(inject_noise)
         episode_inst = ['clean the table']
         # setup plotting
-        if onscreen_render:
-            ax = plt.subplot()
-            plt_img = ax.imshow(ts.observation['images'][render_cam_name])
-            plt.ion()
+        # if onscreen_render:
+        #     ax = plt.subplot()
+        #     plt_img = ax.imshow(ts.observation['images'][render_cam_name])
+        #     plt.ion()
         for step in range(episode_len):
             action, inst = policy(ts, True)
             ts = env.step(action)
             # print(step, ts.reward)
             episode.append(ts)
             episode_inst.append(inst)
-            if onscreen_render:
-                plt_img.set_data(ts.observation['images'][render_cam_name])
-                plt.pause(0.001)
+            # if onscreen_render:
+            #     plt_img.set_data(ts.observation['images'][render_cam_name])
+            #     plt.pause(0.001)
         plt.close()
 
         episode_return = np.sum([ts.reward for ts in episode[1:]])
@@ -77,14 +80,61 @@ def main(args):
             print(f"{episode_idx=} Failed")
 
         joint_traj = [ts.observation['qpos'] for ts in episode]
-        eepos_traj = [ts.observation['ee_pos'] for ts in episode]
-        eevel_traj = [ts.observation['ee_vel'] for ts in episode]
+        
+        joint_vel_traj = []
+        for i in range(len(episode) - 1):
+            delta = episode[i+1].observation['qpos'] - episode[i].observation['qpos']
+            delta[-1] = episode[i+1].observation['qpos'][-1]
+            joint_vel_traj.append(delta)
+
+        ee_vel_traj = []
+        for i in range(len(episode) - 1):
+            delta = episode[i+1].observation['ee_pos'] - episode[i].observation['ee_pos']
+            delta[-1] = episode[i+1].observation['ee_pos'][-1]
+            ee_vel_traj.append(delta)
+            
+        # print('delta_ee_pos', ee_vel_traj)
+        ee_pos_traj = [ts.observation['ee_pos'] for ts in episode]
+
+        ee_rpy_pos_traj = [ts.observation['ee_rpy_pos'] for ts in episode]
+        
+        ee_rpy_vel_traj = []
+        for i in range(len(ee_vel_traj)):
+            prev_back_quat = Quaternion(episode[i].observation['ee_pos'][3:7]).conjugate
+            next_quat = Quaternion(episode[i+1].observation['ee_pos'][3:7]) 
+            delta_quat =  (prev_back_quat * next_quat).elements
+            
+            delta_rpy = quat_to_rpy(*delta_quat)
+            delta = np.concatenate([ee_vel_traj[i][0:3], delta_rpy, [ee_vel_traj[i][-1]]])
+            ee_rpy_vel_traj.append(delta)
+            
         inst_traj = episode_inst
+        
         # replace gripper pose with gripper control
         gripper_ctrl_traj = [ts.observation['gripper_ctrl'] for ts in episode]
         for joint, ctrl in zip(joint_traj, gripper_ctrl_traj):
             left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
             joint[6] = left_ctrl
+
+        for joint, ctrl in zip(joint_vel_traj, gripper_ctrl_traj):
+            left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
+            joint[6] = left_ctrl
+
+        for ee, ctrl in zip(ee_rpy_pos_traj, gripper_ctrl_traj):
+            left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
+            ee[6] = left_ctrl
+
+        for ee, ctrl in zip(ee_rpy_vel_traj, gripper_ctrl_traj):
+            left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
+            ee[6] = left_ctrl
+
+        for ee, ctrl in zip(ee_pos_traj, gripper_ctrl_traj):
+            left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
+            ee[7] = left_ctrl
+
+        for ee, ctrl in zip(ee_vel_traj, gripper_ctrl_traj):
+            left_ctrl = PUPPET_GRIPPER_POSITION_NORMALIZE_FN(ctrl[0])
+            ee[7] = left_ctrl
 
         subtask_info = episode[0].observation['env_state'].copy() # box pose at step 0
         if task_name == 'sim_clean' or task_name == 'sim_onearm_clean':
@@ -96,11 +146,10 @@ def main(args):
         del episode
         # setup the environment
         print('Replaying joint commands')
-        env = make_sim_env(task_name)
+        env = make_sim_env(task_name, 'vel')
         if task_name == 'sim_clean' or task_name == 'sim_onearm_clean':
             ts = env.reset()
             env.task.init_objects(env.physics, subtask_info)
-
         else:
             BOX_POSE[0] = subtask_info # make sure the sim_env has the same object configurations as ee_sim_env
             ts = env.reset()
@@ -111,8 +160,8 @@ def main(args):
             ax = plt.subplot()
             plt_img = ax.imshow(ts.observation['images'][render_cam_name])
             plt.ion()
-        for t in range(len(joint_traj)): # note: this will increase episode length by 1
-            action = joint_traj[t]
+        for t in range(len(joint_vel_traj)): # note: this will increase episode length by 1
+            action = ee_rpy_vel_traj[t]
             ts = env.step(action)
             episode_replay.append(ts)
             if onscreen_render:
@@ -147,6 +196,8 @@ def main(args):
         - joint_vel
         - ee_pos
         - ee_vel
+        - ee_rpy_pos
+        - ee_rpy_vel
         """
 
         data_dict = {
@@ -159,6 +210,8 @@ def main(args):
             '/actions/joint_vel' : [],
             '/actions/ee_pos' : [],
             '/actions/ee_vel' : [],
+            '/actions/ee_rpy_pos' : [],
+            '/actions/ee_rpy_vel' : [],
         }
         for cam_name in camera_names:
             data_dict[f'/observations/images/{cam_name}'] = []
@@ -166,9 +219,12 @@ def main(args):
         # because the replaying, there will be eps_len + 1 actions and eps_len + 2 timesteps
         # truncate here to be consistent
         joint_traj = joint_traj[1:-1]
+        joint_vel_traj = joint_vel_traj[1:]
         episode_replay = episode_replay[1:-1]
-        eepos_traj = eepos_traj[1:-1]
-        eevel_traj = eevel_traj[1:-1]
+        ee_pos_traj = ee_pos_traj[1:-1]
+        ee_vel_traj = ee_vel_traj[1:]
+        ee_rpy_pos_traj = ee_rpy_pos_traj[1:-1]
+        ee_rpy_vel_traj = ee_rpy_vel_traj[1:]
         inst_traj[1:-1]
 
         # len(joint_traj) i.e. actions: max_timesteps
@@ -176,8 +232,11 @@ def main(args):
         max_timesteps = len(joint_traj)
         while joint_traj:
             action = joint_traj.pop(0)
-            eepos_action = eepos_traj.pop(0)
-            eevel_action = eevel_traj.pop(0)
+            joint_vel_action = joint_vel_traj.pop(0)
+            ee_pos_action = ee_pos_traj.pop(0)
+            ee_vel_action = ee_vel_traj.pop(0)
+            ee_rpy_pos_action = ee_rpy_pos_traj.pop(0)
+            ee_rpy_vel_action = ee_rpy_vel_traj.pop(0)
             ts = episode_replay.pop(0)
             inst = inst_traj.pop(0)
             data_dict['/observations/qpos'].append(ts.observation['qpos'])
@@ -187,9 +246,11 @@ def main(args):
                 data_dict['/observations/instructions'].append(inst)
             data_dict['/action'].append(action)
             data_dict['/actions/joint_pos'].append(action)
-            data_dict['/actions/joint_vel'].append(ts.observation['qvel'])
-            data_dict['/actions/ee_pos'].append(eepos_action)
-            data_dict['/actions/ee_vel'].append(eevel_action)
+            data_dict['/actions/joint_vel'].append(joint_vel_action)
+            data_dict['/actions/ee_pos'].append(ee_pos_action)
+            data_dict['/actions/ee_vel'].append(ee_vel_action)
+            data_dict['/actions/ee_rpy_pos'].append(ee_rpy_pos_action)
+            data_dict['/actions/ee_rpy_vel'].append(ee_rpy_vel_action)
 
             for cam_name in camera_names:
                 data_dict[f'/observations/images/{cam_name}'].append(ts.observation['images'][cam_name])
@@ -205,8 +266,7 @@ def main(args):
             for cam_name in camera_names:
                 _ = image.create_dataset(cam_name, (max_timesteps, 240, 320, 3), dtype='uint8',
                                          chunks=(1, 240, 320, 3), )
-            # compression='gzip',compression_opts=2,)
-            # compression=32001, compression_opts=(0, 0, 0, 0, 9, 1, 1), shuffle=False)
+
             qpos = obs.create_dataset('qpos', (max_timesteps, 7))
             qvel = obs.create_dataset('qvel', (max_timesteps, 7))
             action = root.create_dataset('action', (max_timesteps, 7))
@@ -217,6 +277,8 @@ def main(args):
                 action_joint_vel = actions.create_dataset('joint_vel', (max_timesteps, 7))
                 action_ee_pos = actions.create_dataset('ee_pos', (max_timesteps, 8))
                 action_ee_vel = actions.create_dataset('ee_vel', (max_timesteps, 8))
+                action_ee_pos = actions.create_dataset('ee_rpy_pos', (max_timesteps, 7))
+                action_ee_vel = actions.create_dataset('ee_rpy_vel', (max_timesteps, 7))
                 instructions = obs.create_dataset('instructions', (max_timesteps,), dtype=h5py.string_dtype(encoding='utf-8'))
 
             for name, array in data_dict.items():
@@ -228,9 +290,9 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task_name', action='store', type=str, help='task_name', required=True)
-    parser.add_argument('--dataset_dir', action='store', type=str, help='dataset saving dir', required=True)
-    parser.add_argument('--num_episodes', action='store', type=int, help='num_episodes', required=False)
+    parser.add_argument('--task_name', action='store', type=str, help='task_name', required=False, default='sim_onearm_clean')
+    parser.add_argument('--dataset_dir', action='store', type=str, help='dataset saving dir', required=False, default='.')
+    parser.add_argument('--num_episodes', action='store', type=int, help='num_episodes', required=False, default=1)
     parser.add_argument('--onscreen_render', action='store_true')
     
     main(vars(parser.parse_args()))

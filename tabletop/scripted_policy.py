@@ -509,11 +509,11 @@ class CleanPolicy(BasePolicy):
 
         self.right_trajectory.append({"t": maxtimestep, "xyz": pos.copy(), "quat": init_mocap_pose_right[3:], "gripper": 0})
         ################### END OF RIGHT ARM PLAN #######################################################################
-        for p in self.left_trajectory:
-            print(p)
+        # for p in self.left_trajectory:
+        #     print(p)
 
-        for p in self.right_trajectory:
-            print(p)
+        # for p in self.right_trajectory:
+        #     print(p)
 
 class OneArmCleanPolicy(OneArmBasePolicy):
     def get_angle(self, vector):
@@ -738,8 +738,8 @@ class OneArmCleanPolicy(OneArmBasePolicy):
 
         self.left_trajectory.append({"t": maxtimestep, "xyz": pos.copy(), "quat": init_mocap_pose_left[3:], "gripper": 0, 'instruction':'stay'})
         ################### END OF LEFT ARM PLAN #######################################################################  
-        for p in self.left_trajectory:
-            print(p)
+        # for p in self.left_trajectory:
+        #     print(p)
 
 class PickAndTransferPolicy(BasePolicy):
     def generate_trajectory(self, ts_first):

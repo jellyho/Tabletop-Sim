@@ -13,12 +13,14 @@ from tabletop.constants import MASTER_GRIPPER_POSITION_NORMALIZE_FN
 from tabletop.constants import PUPPET_GRIPPER_POSITION_NORMALIZE_FN
 from tabletop.constants import PUPPET_GRIPPER_VELOCITY_NORMALIZE_FN
 
+from tabletop.wrappers import *
+
 import IPython
 e = IPython.embed
 
 BOX_POSE = [None] # to be changed from outside
 
-def make_sim_env(task_name):
+def make_sim_env(task_name, action_type='abs'):
     """
     Environment for simulated robot bi-manual manipulation, with joint position control
     Action space:      [left_arm_qpos (6),             # absolute joint position
@@ -51,13 +53,19 @@ def make_sim_env(task_name):
     elif 'sim_clean' in task_name:
         xml_path = os.path.join(XML_DIR, f'bimanual_viperx_clean.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = CleanTask(random=False)
+        if action_type == 'vel':
+            task = get_joint_vel_wrapper(CleanTask)
+        else:
+            task = CleanTask(False)
         env = control.Environment(physics, task, time_limit=40, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     elif 'sim_onearm_clean' in task_name:
         xml_path = os.path.join(XML_DIR, f'onearm_viperx_clean.xml')
         physics = mujoco.Physics.from_xml_path(xml_path)
-        task = OneArmCleanTask(random=False)
+        if action_type == 'vel':
+            task = get_onearm_joint_vel_wrapper(OneArmCleanTask)
+        else:
+            task = OneArmCleanTask(False)
         env = control.Environment(physics, task, time_limit=40, control_timestep=DT,
                                   n_sub_steps=None, flat_observation=False)
     else:
@@ -65,7 +73,7 @@ def make_sim_env(task_name):
     return env
 
 class OneArmViperXTask(base.Task):
-    def __init__(self, random=None):
+    def __init__(self, random=False):
         super().__init__(random=random)
 
     def before_step(self, action, physics):
@@ -77,6 +85,7 @@ class OneArmViperXTask(base.Task):
         full_left_gripper_action = [left_gripper_action, -left_gripper_action]
 
         env_action = np.concatenate([left_arm_action, full_left_gripper_action])
+        # print(env_action)
         super().before_step(env_action, physics)
         return
 
@@ -121,7 +130,7 @@ class OneArmViperXTask(base.Task):
         raise NotImplementedError
 
 class BimanualViperXTask(base.Task):
-    def __init__(self, random=None):
+    def __init__(self, random=False):
         super().__init__(random=random)
 
     def before_step(self, action, physics):
