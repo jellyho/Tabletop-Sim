@@ -57,27 +57,27 @@ class HandoverBox(AlohaTask):
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
 
-class PutIntoPot(AlohaTask):
+class BoxIntoPot(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
 
         self.instruction_template = "Put the {object} into the pot"
         self.instruction = None
-        self.objects = ['squirrel', 'shark', 'cow']
+        self.objects = ['yellow box', 'white box', 'red box']
         self.target_object = None
-        self.pot_pose = [0.2, 0.2, 0.01]
+        self.pot_pose = [0.15, 0.2, 0.01]
 
-        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_pose, rpy=[0, 0, 90], scale=[1.3, 1.3, 1.7])
-        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.7, 0.7, 0.7], mass=0.3)
-        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.3)
-        self.add_object('cow', 'Schleich_Hereford_Bull', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_pose, rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
+        self.add_object('yellow box', 'Pepsi_Cola_Caffeine_Free_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
+        self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
+        self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
 
     def initialize_episode(self, physics):
-        self.set_object_pose(physics, 'pot', pos=[0.0, 0.15, 0.01], rpy=[0, 0, 0])
+        self.set_object_pose(physics, 'pot', pos=self.pot_pose, rpy=[0, 0, 0])
         objects_poses = [
-            [0, 0, 0.05],
-            [-0.15, -0.15, 0.05],
-            [0.15, -0.15, 0.05],
+            [-0.1, -0.1, 0.05],
+            [-0.2, -0.25, 0.05],
+            [0.0, -0.25, 0.05],
         ]
         
         for obj in self.objects:
@@ -109,6 +109,7 @@ class PutIntoPot(AlohaTask):
         reward_condition_list = [
             [target_in_pot and others_not_in_pot and pot_at_target, 10],
         ]
+        print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot and pot_at_target}")
         return super().get_reward(physics, reward_condition_list) ### always first
 
 class ShoesTable(AlohaTask):
@@ -200,8 +201,8 @@ ALOHA_TASK_CONFIGS = {
         'task_class': LiftBox,
         'episode_len': 15,
     },
-    'aloha_put_into_pot': {
-        'task_class': PutIntoPot,
+    'aloha_box_into_pot': {
+        'task_class': BoxIntoPot,
         'episode_len': 15,
     },
 }
