@@ -1,5 +1,5 @@
 import numpy as np
-import random
+from random import sample
 from tabletop.constants import *
 from tabletop.utils import *
 from tabletop.wrappers import GSOWrapper
@@ -61,6 +61,44 @@ class HandoverBox(AlohaTask):
     
     def get_instruction(self, reward):
         return 'Handover the box and place into the pink basket'
+
+class PutIntoPot(AlohaTask):
+    def __init__(self, random=None):
+        super().__init__(random=random, single_arm=False) ## always first
+        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=[0.2, 0.0, 0.1], rpy=[0, 0, 0], scale=[1, 1, 1])
+        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+        self.add_object('cow', 'Schleich_Hereford_Bull', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+        self.instruction_template = "Put the {object} into the pot"
+        self.instruction = None
+        self.target_object = None
+
+    def initialize_episode(self, physics):
+        self.set_object_pose(physics, 'pot', pos=[0.0, 0.15, 0.01], rpy=[0, 0, 0])
+        objects_poses = [
+            [0, -0.1, 0.05],
+            [-0.1, -0.1, 0.05],
+            [0.1, -0.1, 0.05],
+        ]
+        objects = ['squirrel', 'shark', 'cow']
+        
+        for obj in objects:
+            random_index = np.random.randint(0, len(objects_poses))
+            chosen_pose = objects_poses.pop(random_index)
+            self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[0, 0, 0])
+        self.target_object = objects[np.random.randint(0, len(objects))]
+        self.instruction = self.instruction_template.format(object=self.target_object)
+        super().initialize_episode(physics) ## always last
+
+    def get_reward(self, physics):
+        ## [condition, counter]
+        reward_condition_list = [
+            [self.get_touch_condition(physics, self.target_object, 'pot') and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1, 10],
+        ]
+        return super().get_reward(physics, reward_condition_list) ### always first
+    
+    def get_instruction(self, reward):
+        return self.instruction
 
 class ShoesTable(AlohaTask):
     def __init__(self, random=None):
@@ -151,6 +189,10 @@ ALOHA_TASK_CONFIGS = {
     },
     'aloha_lift_box': {
         'task_class': LiftBox,
+        'episode_len': 15,
+    },
+    'aloha_put_into_pot': {
+        'task_class': PutIntoPot,
         'episode_len': 15,
     },
 }
