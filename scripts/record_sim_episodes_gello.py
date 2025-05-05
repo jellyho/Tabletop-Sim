@@ -20,6 +20,7 @@ class RenderThread(QThread):
     image_signal = pyqtSignal(np.ndarray)
     reward_signal = pyqtSignal(np.ndarray)  # Signal to send reward values
     file_signal = pyqtSignal(str)
+    instruction_signal = pyqtSignal(str)  # New signal for instruction
 
     def __init__(self, env, physics, height, width, gello, num_episode, save_dir):
         super().__init__()
@@ -47,6 +48,12 @@ class RenderThread(QThread):
             ts = self.env.reset()
             self.episode = [ts]
             self.episode_action = []
+            
+            if 'language_instruction' in ts.observation:
+                self.instruction_signal.emit(ts.observation['language_instruction'])
+            else:
+                self.instruction_signal.emit("No instruction available")
+                
             while not self.gello.start and self.running:
                 img = self.physics.render(self.height, self.width, camera_id=0)
                 img = np.ascontiguousarray(img[:self.height, :self.width, :3].astype(np.uint8))
@@ -263,6 +270,7 @@ class SimulationUI(QWidget):
         self.render_thread.image_signal.connect(self.display_image)
         self.render_thread.reward_signal.connect(self.set_current_reward)
         self.render_thread.file_signal.connect(self.set_current_file)
+        self.render_thread.instruction_signal.connect(self.set_instruction)  # Connect new signal
         self.render_thread.start()
 
     def initUI(self):
@@ -274,21 +282,30 @@ class SimulationUI(QWidget):
         self.image_label = QLabel(self)
         self.image_label.setAlignment(Qt.AlignCenter)  # Center align the image
 
-        # Overlay Text Label (Big Text)
+        # Overlay Text Labels
         self.text_label = QLabel("Reward", self)
         self.text_label.setAlignment(Qt.AlignCenter)
         self.text_label.setFont(QFont("Arial", 40, QFont.Bold))
-        self.text_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")  # Semi-transparent background
-        self.text_label.setGeometry(0, 0, self.width, 80)  # Position at the top
+        self.text_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
+        self.text_label.setGeometry(0, 0, self.width, 80)
+        
+        # Instruction label
+        self.instruction_label = QLabel("Instruction: None", self)
+        self.instruction_label.setAlignment(Qt.AlignCenter)
+        self.instruction_label.setFont(QFont("Arial", 30, QFont.Bold))
+        self.instruction_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
+        self.instruction_label.setGeometry(0, 80, self.width, 80)
+        
         self.text_label_file = QLabel("FileName", self)
         self.text_label_file.setAlignment(Qt.AlignCenter)
         self.text_label_file.setFont(QFont("Arial", 40, QFont.Bold))
-        self.text_label_file.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")  # Semi-transparent background
-        self.text_label_file.setGeometry(0, 80, self.width, 80)  # Position at the top
+        self.text_label_file.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
+        self.text_label_file.setGeometry(0, 160, self.width, 80)
 
         self.layout.addWidget(self.text_label)
+        self.layout.addWidget(self.instruction_label)
         self.layout.addWidget(self.text_label_file)
-        self.layout.addWidget(self.image_label, stretch=3)  # Give it more space
+        self.layout.addWidget(self.image_label, stretch=3)
         self.setLayout(self.layout)
 
     def display_image(self, img):
@@ -309,6 +326,10 @@ class SimulationUI(QWidget):
 
     def set_current_file(self, filename):
         self.text_label_file.setText(filename)
+    
+    def set_instruction(self, instruction):
+        """Updates the instruction label."""
+        self.instruction_label.setText(f"Instruction: {instruction}")
     
 
 if __name__ == '__main__':
