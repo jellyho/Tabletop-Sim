@@ -65,9 +65,9 @@ class HandoverBox(AlohaTask):
 class PutIntoPot(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
-        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=[0.2, 0.0, 0.1], rpy=[0, 0, 0], scale=[1, 1, 1])
-        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
-        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=[0.2, 0.0, 0.1], rpy=[0, 0, 0], scale=[1.3, 1.3, 1.7])
+        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.7, 0.7, 0.7], mass=0.3)
+        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.3)
         self.add_object('cow', 'Schleich_Hereford_Bull', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
         self.instruction_template = "Put the {object} into the pot"
         self.instruction = None
@@ -76,9 +76,9 @@ class PutIntoPot(AlohaTask):
     def initialize_episode(self, physics):
         self.set_object_pose(physics, 'pot', pos=[0.0, 0.15, 0.01], rpy=[0, 0, 0])
         objects_poses = [
-            [0, -0.1, 0.05],
-            [-0.1, -0.1, 0.05],
-            [0.1, -0.1, 0.05],
+            [0, 0, 0.05],
+            [-0.15, -0.15, 0.05],
+            [0.15, -0.15, 0.05],
         ]
         objects = ['squirrel', 'shark', 'cow']
         
@@ -95,6 +95,7 @@ class PutIntoPot(AlohaTask):
         reward_condition_list = [
             [self.get_touch_condition(physics, self.target_object, 'pot') and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1, 10],
         ]
+        # print(f"inst: {self.instruction}\treward:{self.get_touch_condition(physics, self.target_object, 'pot') and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1}")
         return super().get_reward(physics, reward_condition_list) ### always first
     
     def get_instruction(self, reward):
