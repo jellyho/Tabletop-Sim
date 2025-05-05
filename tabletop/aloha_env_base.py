@@ -21,6 +21,7 @@ class AlohaTask(base.Task):
         self.robot_offset = 8 if self.single_arm else 16
         self.aloha_ik = AlohaIK()
         self.use_joint_vel_ctrl = False
+        self.instruction = ''
         super().__init__(random=random)
 
     def add_object(self, nick, name, pos=[0, 0, 0.02], rpy=[0, 0, 0], scale=[1, 1, 1], mass=1.0, inertial=[0, 0, 0]):
@@ -321,7 +322,7 @@ class AlohaTask(base.Task):
         return self.reward
     
     def get_instruction(self, reward):
-        return ''
+        return self.instruction
     
     def get_touch_condition(self, physics, name1, name2): ## Call after update_contact
         name1 = self.get_geoms(physics, name1)

@@ -11,6 +11,7 @@ class DishDrainer(AlohaTask):
         super().__init__(random=random, single_arm=False) ## always first
         self.add_object('drainer', 'Rubbermaid_Large_Drainer', pos=[-0.1, 0.1, 0.01], rpy=[0, 0, -60], scale=[0.8, 0.8, 0.8])
         self.add_object('plate', 'Threshold_Bistro_Ceramic_Dinner_Plate_Ruby_Ring', pos=[0.1, 0, 0.01], scale=[0.8, 0.8, 0.8], mass=0.2)
+        self.instruction = 'Pick up the dish and put on to the drainer'
 
     def initialize_episode(self, physics):
         random_vector = np.random.randn(2)
@@ -26,15 +27,12 @@ class DishDrainer(AlohaTask):
             [self.get_touch_condition(physics, 'drainer', 'plate'), 20],
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
-    
-    def get_instruction(self, reward):
-        return 'Pick up the dish and put on to the drainer'
-    
 class HandoverBox(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
         self.add_object('basket', 'Room_Essentials_Fabric_Cube_Lavender', pos=[0.2, 0.0, 0.01], rpy=[0, 0, -40], scale=[0.6, 0.6, 0.6])
         self.add_object('box', 'Fresca_Peach_Citrus_Sparkling_Flavored_Soda_12_PK', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 90], scale=[0.4, 0.25, 0.4], mass=0.3)
+        self.instruction = 'Handover the box and place into the pink basket'
 
     def initialize_episode(self, physics):
         random_vector = np.random.randn(2)
@@ -58,9 +56,6 @@ class HandoverBox(AlohaTask):
             [self.get_touch_condition(physics, 'box', 'basket'), 20],
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
-    
-    def get_instruction(self, reward):
-        return 'Handover the box and place into the pink basket'
 
 class PutIntoPot(AlohaTask):
     def __init__(self, random=None):
@@ -115,9 +110,6 @@ class PutIntoPot(AlohaTask):
             [target_in_pot and others_not_in_pot and pot_at_target, 10],
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
-    
-    def get_instruction(self, reward):
-        return self.instruction
 
 class ShoesTable(AlohaTask):
     def __init__(self, random=None):
@@ -125,6 +117,8 @@ class ShoesTable(AlohaTask):
         self.add_object('toy_table', '3D_Dollhouse_TablePurple', pos=[0.0, 0.1, 0.01], rpy=[0, 0, -80], scale=[3.0, 4.0, 2.0], mass=10.0)
         self.add_object('shoe_right', 'Womens_Canvas_Bahama_in_Black_vnJULsDVyq5', pos=[0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.65, 0.65, 0.65], mass=0.3)
         self.add_object('shoe_left', 'Womens_Canvas_Bahama_in_Black', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, -90], scale=[0.65, 0.65, 0.65], mass=0.3)
+
+        self.instruction = 'Pick up the black shoes and put them side by side on the purple table'
 
     def initialize_episode(self, physics):
         random_vector = np.random.randn(2)
@@ -155,14 +149,13 @@ class ShoesTable(AlohaTask):
             [self.get_touch_condition(physics, 'shoe_right', 'toy_table') and self.get_touch_condition(physics, 'shoe_left', 'toy_table'), 20],
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
-    
-    def get_instruction(self, reward):
-        return 'Pick up the black shoes and put them side by side on the purple table'
 
 class LiftBox(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
         self.add_object('box', 'Perricone_MD_Hypoallergenic_Firming_Eye_Cream_05_oz', pos=[0.0, 0.0, 0.1], rpy=[0, 0, 0], scale=[5, 2, 2], mass=1)
+
+        self.instruction = 'Lift the box with the front facing the camera'
 
     def initialize_episode(self, physics):
         # Generate random position for box within [-1.0, 1.0] range
@@ -189,9 +182,6 @@ class LiftBox(AlohaTask):
         ]
         # print(f"cond1: {abs(abs(rotation_rpy[0]) - np.pi) <= 0.15}\tcond2: {abs(rotation_rpy[1]) < 0.1}\tcond3: {abs(rotation_rpy[2]) < 0.1}")
         return super().get_reward(physics, reward_condition_list)
-    
-    def get_instruction(self, reward):
-        return 'Lift the box with the front facing the camera'    
 
 ALOHA_TASK_CONFIGS = {
     'aloha_dish_drainer': {
