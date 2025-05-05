@@ -65,14 +65,17 @@ class HandoverBox(AlohaTask):
 class PutIntoPot(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
-        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=[0.2, 0.0, 0.1], rpy=[0, 0, 90], scale=[1.3, 1.3, 1.7])
-        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.7, 0.7, 0.7], mass=0.3)
-        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.3)
-        self.add_object('cow', 'Schleich_Hereford_Bull', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
+
         self.instruction_template = "Put the {object} into the pot"
         self.instruction = None
         self.objects = ['squirrel', 'shark', 'cow']
         self.target_object = None
+        self.pot_pose = [0.2, 0.2, 0.01]
+
+        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_pose, rpy=[0, 0, 90], scale=[1.3, 1.3, 1.7])
+        self.add_object('squirrel', 'Squirrel', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.7, 0.7, 0.7], mass=0.3)
+        self.add_object('shark', 'Shark', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.3)
+        self.add_object('cow', 'Schleich_Hereford_Bull', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1, 1, 1], mass=0.3)
 
     def initialize_episode(self, physics):
         self.set_object_pose(physics, 'pot', pos=[0.0, 0.15, 0.01], rpy=[0, 0, 0])
@@ -92,6 +95,7 @@ class PutIntoPot(AlohaTask):
 
     def get_reward(self, physics):
         ## [condition, counter]
+        # Check if the target object is inside the pot
         target_in_pot = self.get_touch_condition(physics, self.target_object, 'pot') and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1
         
         # Check that other objects are not in the pot
@@ -103,8 +107,12 @@ class PutIntoPot(AlohaTask):
                     others_not_in_pot = False
                     break
         
+        # Check if pot is at the expected position
+        pot_pos = self.get_object_pose(physics, 'pot')[0]
+        pot_at_target = np.linalg.norm(np.array(pot_pos) - np.array(self.pot_pose)) < 0.05
+        
         reward_condition_list = [
-            [target_in_pot and others_not_in_pot, 10],
+            [target_in_pot and others_not_in_pot and pot_at_target, 10],
         ]
         return super().get_reward(physics, reward_condition_list) ### always first
     
