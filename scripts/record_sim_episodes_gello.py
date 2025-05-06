@@ -17,15 +17,18 @@ from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import itertools
 
-def generate_task_combinations(repeat_num=1):
+def generate_task_combinations(repeat_num=5):
     objects = ["red box", "white box", "yellow box"]
+    pots = ["blue pot", "green pot"]  # Updated to match pots from BoxIntoPot
     all_combinations = []
     
-    for target in objects:
-        for perm in itertools.permutations(objects):
-            combo = (target, perm)
-            for _ in range(repeat_num):
-                all_combinations.append(combo)
+    # Rearranging the loop structure - first by pot, then by target object
+    for pot in pots:
+        for target in objects:
+            for perm in itertools.permutations(objects):
+                combo = (target, pot, perm)
+                for _ in range(repeat_num):
+                    all_combinations.append(combo)
     
     return all_combinations
 
