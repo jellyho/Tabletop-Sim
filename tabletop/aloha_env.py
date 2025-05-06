@@ -70,17 +70,17 @@ class BoxIntoPot(AlohaTask):
         self.target_pot = None
         self.use_fixed_combination = False
         self.objects_poses = [
-            [-0.1, -0.1, 0.05],
-            [-0.2, -0.25, 0.05],
-            [0.0, -0.25, 0.05],
+            [-0.1, 0.05, 0.05],
+            [-0.2, -0.05, 0.05],
+            [0.00, -0.05, 0.05],
         ]
         self.pot_poses = {
-            'blue pot': [0.15, 0.2, 0.01],
-            'green pot': [-0.15, 0.2, 0.01]
+            'blue pot': [0.25, 0.2, 0.01],
+            'green pot': [0.25, -0.2, 0.01]
         }
 
-        self.add_object('blue pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_poses['blue pot'], rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
-        self.add_object('green pot', 'Ecoforms_Plant_Container_12_Pot_Nova', pos=self.pot_poses['green pot'], rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
+        self.add_object('blue pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_poses['blue pot'], rpy=[0, 0, 0], scale=[0.9, 0.9, 0.9])
+        self.add_object('green pot', 'Ecoforms_Plant_Container_12_Pot_Nova', pos=self.pot_poses['green pot'], rpy=[0, 0, 0], scale=[0.5, 0.5, 0.5])
         self.add_object('yellow box', 'Pepsi_Cola_Caffeine_Free_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
         self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
         self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
@@ -99,8 +99,8 @@ class BoxIntoPot(AlohaTask):
             self.instruction = self.instruction_template.format(object=self.fixed_target_object, pot=self.fixed_target_pot)
 
     def initialize_episode(self, physics):
-        self.set_object_pose(physics, 'blue pot', pos=self.pot_poses['blue pot'], rpy=[0, 0, 90])
-        self.set_object_pose(physics, 'green pot', pos=self.pot_poses['green pot'], rpy=[0, 0, 90])
+        self.set_object_pose(physics, 'blue pot', pos=self.pot_poses['blue pot'], rpy=[0, 0, 0])
+        self.set_object_pose(physics, 'green pot', pos=self.pot_poses['green pot'], rpy=[0, 0, 0])
         
         # Use fixed combination if available, otherwise randomize
         if self.use_fixed_combination:
@@ -108,14 +108,14 @@ class BoxIntoPot(AlohaTask):
             self.target_pot = self.fixed_target_pot
             for i, obj in enumerate(self.fixed_object_order):
                 if i < len(self.objects_poses):
-                    self.set_object_pose(physics, obj, pos=self.objects_poses[i], rpy=[0, 0, 0])
+                    self.set_object_pose(physics, obj, pos=self.objects_poses[i], rpy=[np.pi/2, 0, 0])
         else:
             # Randomize objects positions
             objects_poses_copy = self.objects_poses.copy()
             for obj in self.objects:
                 random_index = np.random.randint(0, len(objects_poses_copy))
                 chosen_pose = objects_poses_copy.pop(random_index)
-                self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[0, 0, 0])
+                self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[np.pi/2, 0, 0])
             
             # Randomize target object and pot
             self.target_object = self.objects[np.random.randint(0, len(self.objects))]

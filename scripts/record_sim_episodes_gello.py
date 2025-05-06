@@ -33,7 +33,7 @@ def generate_task_combinations(repeat_num=5):
     return all_combinations
 
 # Example usage:
-# combinations = generate_task_combinations(repeat_num=3)
+combinations = generate_task_combinations(repeat_num=3)
 
 class RenderThread(QThread):
     image_signal = pyqtSignal(np.ndarray)
@@ -408,7 +408,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    task_combinations = None
+    task_combinations = generate_task_combinations()
     
     # If it's the box into pot task, generate combinations
     if args.task_name == 'aloha_put_into_pot':
