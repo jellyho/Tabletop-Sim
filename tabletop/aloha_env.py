@@ -62,13 +62,25 @@ class BoxIntoPot(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
 
-        self.instruction_template = "Put the {object} into the pot"
+        self.instruction_template = "Put the {object} into the {pot}"
         self.instruction = None
         self.objects = ['yellow box', 'white box', 'red box']
+        self.pots = ['blue pot', 'green pot']
         self.target_object = None
-        self.pot_pose = [0.15, 0.2, 0.01]
+        self.target_pot = None
+        self.use_fixed_combination = False
+        self.objects_poses = [
+            [-0.1, -0.1, 0.05],
+            [-0.2, -0.25, 0.05],
+            [0.0, -0.25, 0.05],
+        ]
+        self.pot_poses = {
+            'blue pot': [0.15, 0.2, 0.01],
+            'green pot': [-0.15, 0.2, 0.01]
+        }
 
-        self.add_object('pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_pose, rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
+        self.add_object('blue pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_poses['blue pot'], rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
+        self.add_object('green pot', 'Ecoforms_Plant_Container_12_Pot_Nova', pos=self.pot_poses['green pot'], rpy=[0, 0, 90], scale=[0.9, 0.9, 0.9])
         self.add_object('yellow box', 'Pepsi_Cola_Caffeine_Free_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
         self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
         self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
@@ -76,76 +88,60 @@ class BoxIntoPot(AlohaTask):
     def set_combination(self, combination):
         """
         Set a specific combination for this task.
-        combination: tuple of (target_object, object_order)
+        combination: tuple of (target_object, target_pot, object_order)
         """
         if combination:
             self.use_fixed_combination = True
             self.fixed_target_object = combination[0]
-            self.fixed_object_order = combination[1]
+            self.fixed_target_pot = combination[1]
+            self.fixed_object_order = combination[2]
             # Update instruction immediately
-            self.instruction = self.instruction_template.format(object=self.fixed_target_object)
+            self.instruction = self.instruction_template.format(object=self.fixed_target_object, pot=self.fixed_target_pot)
 
     def initialize_episode(self, physics):
-        self.set_object_pose(physics, 'pot', pos=self.pot_pose, rpy=[0, 0, 0])
-        objects_poses = [
-            [-0.1, -0.1, 0.05],
-            [-0.2, -0.25, 0.05],
-            [0.0, -0.25, 0.05],
-        ]
+        self.set_object_pose(physics, 'blue pot', pos=self.pot_poses['blue pot'], rpy=[0, 0, 90])
+        self.set_object_pose(physics, 'green pot', pos=self.pot_poses['green pot'], rpy=[0, 0, 90])
         
         # Use fixed combination if available, otherwise randomize
         if self.use_fixed_combination:
             self.target_object = self.fixed_target_object
-            
-            # Place objects according to the specified order
-            objects_poses = [
-                [0, 0, 0.05],
-                [-0.15, -0.15, 0.05],
-                [0.15, -0.15, 0.05],
-            ]
-            
+            self.target_pot = self.fixed_target_pot
             for i, obj in enumerate(self.fixed_object_order):
-                if i < len(objects_poses):
-                    self.set_object_pose(physics, obj, pos=objects_poses[i], rpy=[0, 0, 0])
+                if i < len(self.objects_poses):
+                    self.set_object_pose(physics, obj, pos=self.objects_poses[i], rpy=[0, 0, 0])
         else:
-            # Original random logic
-            objects_poses = [
-                [0, 0, 0.05],
-                [-0.15, -0.15, 0.05],
-                [0.15, -0.15, 0.05],
-            ]
-            
+            # Randomize objects positions
+            objects_poses_copy = self.objects_poses.copy()
             for obj in self.objects:
-                random_index = np.random.randint(0, len(objects_poses))
-                chosen_pose = objects_poses.pop(random_index)
+                random_index = np.random.randint(0, len(objects_poses_copy))
+                chosen_pose = objects_poses_copy.pop(random_index)
                 self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[0, 0, 0])
-            self.target_object = self.objects[np.random.randint(0, len(self.objects))]
             
-        self.instruction = self.instruction_template.format(object=self.target_object)
+            # Randomize target object and pot
+            self.target_object = self.objects[np.random.randint(0, len(self.objects))]
+            self.target_pot = self.pots[np.random.randint(0, len(self.pots))]
+            
+        self.instruction = self.instruction_template.format(object=self.target_object, pot=self.target_pot)
         super().initialize_episode(physics) ## always last
 
     def get_reward(self, physics):
         ## [condition, counter]
-        # Check if the target object is inside the pot
-        target_in_pot = self.get_touch_condition(physics, self.target_object, 'pot') and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1
+        # Check if the target object is inside the target pot
+        target_in_pot = self.get_touch_condition(physics, self.target_object, self.target_pot) and abs(self.get_object_pose(physics, self.target_object)[0][2] - self.get_object_pose(physics, self.target_pot)[0][2]) <= 0.1
         
-        # Check that other objects are not in the pot
+        # Check that other objects are not in the target pot
         others_not_in_pot = True
         for obj in self.objects:
             if obj != self.target_object:
-                obj_in_pot = self.get_touch_condition(physics, obj, 'pot') and abs(self.get_object_pose(physics, obj)[0][2] - self.get_object_pose(physics, 'pot')[0][2]) <= 0.1
+                obj_in_pot = self.get_touch_condition(physics, obj, self.target_pot) and abs(self.get_object_pose(physics, obj)[0][2] - self.get_object_pose(physics, self.target_pot)[0][2]) <= 0.1
                 if obj_in_pot:
                     others_not_in_pot = False
                     break
         
-        # Check if pot is at the expected position
-        pot_pos = self.get_object_pose(physics, 'pot')[0]
-        pot_at_target = np.linalg.norm(np.array(pot_pos) - np.array(self.pot_pose)) < 0.05
-        
         reward_condition_list = [
-            [target_in_pot and others_not_in_pot and pot_at_target, 10],
+            [target_in_pot and others_not_in_pot, 10],
         ]
-        print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot and pot_at_target}")
+        print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot}")
         return super().get_reward(physics, reward_condition_list) ### always first
 
 class ShoesTable(AlohaTask):
