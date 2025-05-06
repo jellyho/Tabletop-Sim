@@ -18,7 +18,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import itertools
 
 def generate_task_combinations(repeat_num=5):
-    objects = ["red box", "white box", "yellow box"]
+    objects = ["blue box", "white box", "brown box"]
     pots = ["blue pot", "green pot"]  # Updated to match pots from BoxIntoPot
     all_combinations = []
     
