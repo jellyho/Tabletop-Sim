@@ -64,7 +64,7 @@ class BoxIntoPot(AlohaTask):
 
         self.instruction_template = "Put the {object} into the {pot}"
         self.instruction = None
-        self.objects = ['brown box', 'white box', 'blue box']
+        self.objects = ['brown box', 'white box', 'yellow box']
         self.pots = ['blue pot', 'green pot']
         self.target_object = None
         self.target_pot = None
@@ -81,9 +81,9 @@ class BoxIntoPot(AlohaTask):
 
         self.add_object('blue pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_poses['blue pot'], rpy=[0, 0, 0], scale=[0.9, 0.9, 0.9])
         self.add_object('green pot', 'Ecoforms_Plant_Container_12_Pot_Nova', pos=self.pot_poses['green pot'], rpy=[0, 0, 0], scale=[0.5, 0.5, 0.5])
-        self.add_object('brown box', 'Perricone_MD_Neuropeptide_Firming_Moisturizer', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
-        self.add_object('white box', 'Perricone_MD_Firming_Neck_Therapy_Treatment', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
-        self.add_object('blue box', 'Embark_Lunch_Cooler_Blue', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
+        self.add_object('brown box', 'Perricone_MD_Neuropeptide_Firming_Moisturizer', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.6, 0.7], mass=0.1)
+        self.add_object('white box', 'Perricone_MD_Firming_Neck_Therapy_Treatment', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.5, 0.6], mass=0.1)
+        self.add_object('yellow box', 'Ultra_JarroDophilus', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.6, 0.4], mass=0.1)
 
     def set_combination(self, combination):
         """

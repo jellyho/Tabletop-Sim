@@ -18,7 +18,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import itertools
 
 def generate_task_combinations(repeat_num=5):
-    objects = ["blue box", "white box", "brown box"]
+    objects = ["yellow box", "white box", "brown box"]
     pots = ["blue pot", "green pot"]  # Updated to match pots from BoxIntoPot
     all_combinations = []
     
@@ -378,32 +378,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--task_name', action='store', type=str, default='aloha_upright_mug', required=False)
     parser.add_argument('-a', '--action_type', action='store', type=str, default='ee_quat_pos', required=False)
-    parser.add_argument('-n', '--num_episodes', action='store', type=int, default=1)
+    parser.add_argument('-n', '--num_episodes', action='store', type=int, default=180)
     parser.add_argument('-d', '--save_dir', action='store', type=str, default='datasets')
-    parser.add_argument('-r', '--repeat', action='store', type=int, default=1, help='Number of times to repeat each task combination')
+    parser.add_argument('-r', '--repeat', action='store', type=int, default=5, help='Number of times to repeat each task combination')
     
     args = parser.parse_args()
     
-    task_combinations = generate_task_combinations()
-    
-    # If it's the box into pot task, generate combinations
-    if args.task_name == 'aloha_put_into_pot':
-        objects = ['squirrel', 'shark', 'cow']
-        task_combinations = []
-        
-        # Generate combinations - target object and placement order
-        for target in objects:
-            for perm in itertools.permutations(objects):
-                combo = (target, perm)
-                # Add the combination repeat times
-                for _ in range(args.repeat):
-                    task_combinations.append(combo)
-        
-        # Adjust num_episodes if task_combinations is used
-        if task_combinations:
-            args.num_episodes = len(task_combinations)
-            print(f"Generated {len(task_combinations)} combinations. Setting num_episodes to match.")
-    
+    task_combinations = generate_task_combinations(args.repeat)
+    for i, task in enumerate(task_combinations):
+        print(f"comb {i}: {task}")
+
     app = QApplication(sys.argv)
     ui = SimulationUI(args.task_name, args.action_type, args.num_episodes, args.save_dir, task_combinations=task_combinations)
     ui.show()
