@@ -74,7 +74,7 @@ class RenderThread(QThread):
                 # Set the combination in the task if it supports it
                 if hasattr(self.task, 'set_combination'):
                     self.task.set_combination(self.current_combination)
-                    combination_info = f"Target: {self.current_combination[0]}, Order: {' -> '.join(self.current_combination[1])}"
+                    combination_info = f"Target: {self.current_combination[0]}, Pot: {self.current_combination[1]}, Order: {' -> '.join(self.current_combination[2])}"
                     self.combination_signal.emit(combination_info)
             
             ts = self.env.reset()
@@ -187,8 +187,10 @@ class RenderThread(QThread):
         # Add combination information to the file name if available
         if self.current_combination:
             target_obj = self.current_combination[0]
+            target_pot = self.current_combination[1]
+            combination_order = ''.join(self.current_combination[2])
             # Create a more descriptive filename with the combination information
-            dataset_path = os.path.join(self.save_dir, f'episode_{num}_target_{target_obj}.hdf5')
+            dataset_path = os.path.join(self.save_dir, f'episode_{num}_{target_obj}_{target_pot}_{combination_order}.hdf5')
         else:
             dataset_path = os.path.join(self.save_dir, f'episode_{num}.hdf5')
         
