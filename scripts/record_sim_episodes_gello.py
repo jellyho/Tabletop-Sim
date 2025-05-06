@@ -40,7 +40,6 @@ class RenderThread(QThread):
     reward_signal = pyqtSignal(np.ndarray)  # Signal to send reward values
     file_signal = pyqtSignal(str)
     instruction_signal = pyqtSignal(str)  # Signal for instruction
-    combination_signal = pyqtSignal(str)  # New signal for current combination info
 
     def __init__(self, env, physics, height, width, gello, num_episode, save_dir, task_combinations=None):
         super().__init__()
@@ -74,8 +73,6 @@ class RenderThread(QThread):
                 # Set the combination in the task if it supports it
                 if hasattr(self.task, 'set_combination'):
                     self.task.set_combination(self.current_combination)
-                    combination_info = f"Target: {self.current_combination[0]}, Pot: {self.current_combination[1]}, Order: {' -> '.join(self.current_combination[2])}"
-                    self.combination_signal.emit(combination_info)
             
             ts = self.env.reset()
             self.episode = [ts]
@@ -375,10 +372,6 @@ class SimulationUI(QWidget):
     def set_instruction(self, instruction):
         """Updates the instruction label."""
         self.instruction_label.setText(f"Instruction: {instruction}")
-    
-    def set_combination_info(self, info):
-        """Updates the combination info label."""
-        self.combination_label.setText(f"Current Combination: {info}")
 
 
 if __name__ == '__main__':
