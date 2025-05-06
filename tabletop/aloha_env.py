@@ -81,9 +81,9 @@ class BoxIntoPot(AlohaTask):
 
         self.add_object('blue pot', 'Ecoforms_Garden_Pot_GP16ATurquois', pos=self.pot_poses['blue pot'], rpy=[0, 0, 0], scale=[0.9, 0.9, 0.9])
         self.add_object('green pot', 'Ecoforms_Plant_Container_12_Pot_Nova', pos=self.pot_poses['green pot'], rpy=[0, 0, 0], scale=[0.5, 0.5, 0.5])
-        self.add_object('yellow box', 'Pepsi_Cola_Caffeine_Free_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
-        self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
-        self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
+        self.add_object('yellow box', 'Pepsi_Cola_Caffeine_Free_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
+        self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
+        self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.25, 0.4], mass=0.1)
 
     def set_combination(self, combination):
         """
@@ -141,7 +141,7 @@ class BoxIntoPot(AlohaTask):
         reward_condition_list = [
             [target_in_pot and others_not_in_pot, 10],
         ]
-        print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot}")
+        # print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot}")
         return super().get_reward(physics, reward_condition_list) ### always first
 
 class ShoesTable(AlohaTask):

@@ -186,11 +186,12 @@ class RenderThread(QThread):
         
         # Add combination information to the file name if available
         if self.current_combination:
-            target_obj = self.current_combination[0]
-            target_pot = self.current_combination[1]
-            combination_order = ''.join(self.current_combination[2])
+            target_obj = self.current_combination[0].replace(' ', '_')
+            target_pot = self.current_combination[1].replace(' ', '_')
+            combination_order = ''.join([x[0] for x in self.current_combination[2]])
             # Create a more descriptive filename with the combination information
             dataset_path = os.path.join(self.save_dir, f'episode_{num}_{target_obj}_{target_pot}_{combination_order}.hdf5')
+            print(f"dataset_path: {dataset_path}")
         else:
             dataset_path = os.path.join(self.save_dir, f'episode_{num}.hdf5')
         
@@ -242,11 +243,6 @@ class RenderThread(QThread):
                 data_dict['/actions/ee_quat_pos'].append(action1)
                 data_dict['/actions/ee_6d_pos'].append(action2)    
         
-        # Add combination metadata to the dataset if available
-        if self.current_combination:
-            data_dict['/metadata/target_object'] = [self.current_combination[0]] * max_timesteps
-            data_dict['/metadata/object_order'] = [','.join(self.current_combination[1])] * max_timesteps
-        
         with h5py.File(dataset_path, 'w', rdcc_nbytes=1024 ** 2 * 2) as root:
             obs = root.create_group('observations')
             state = obs.create_group('states')
@@ -273,12 +269,6 @@ class RenderThread(QThread):
             else:
                 action_ee_quat_pos = action.create_dataset('ee_quat_pos', (max_timesteps, data_dict['/actions/ee_quat_pos'][0].shape[0]))
                 action_ee_6d_pos = action.create_dataset('ee_6d_pos', (max_timesteps, data_dict['/actions/ee_6d_pos'][0].shape[0]))
-
-            # Add metadata if it exists
-            if '/metadata/target_object' in data_dict:
-                metadata = root.create_group('metadata')
-                target = metadata.create_dataset('target_object', (max_timesteps,), dtype=h5py.string_dtype(encoding='utf-8'))
-                order = metadata.create_dataset('object_order', (max_timesteps,), dtype=h5py.string_dtype(encoding='utf-8'))
             
             for name, array in data_dict.items():
                 root[name][...] = array
@@ -326,7 +316,6 @@ class SimulationUI(QWidget):
         self.render_thread.reward_signal.connect(self.set_current_reward)
         self.render_thread.file_signal.connect(self.set_current_file)
         self.render_thread.instruction_signal.connect(self.set_instruction)
-        self.render_thread.combination_signal.connect(self.set_combination_info)  # Connect new signal
         self.render_thread.start()
 
     def initUI(self):
@@ -358,17 +347,9 @@ class SimulationUI(QWidget):
         self.text_label_file.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
         self.text_label_file.setGeometry(0, 160, self.width, 80)
 
-        # Add a label for combination info
-        self.combination_label = QLabel("Current Combination: None", self)
-        self.combination_label.setAlignment(Qt.AlignCenter)
-        self.combination_label.setFont(QFont("Arial", 25, QFont.Bold))
-        self.combination_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
-        self.combination_label.setGeometry(0, 240, self.width, 60)
-
         self.layout.addWidget(self.text_label)
         self.layout.addWidget(self.instruction_label)
         self.layout.addWidget(self.text_label_file)
-        self.layout.addWidget(self.combination_label)
         self.layout.addWidget(self.image_label, stretch=3)
         self.setLayout(self.layout)
 
