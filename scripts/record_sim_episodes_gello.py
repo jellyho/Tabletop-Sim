@@ -15,14 +15,31 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QVBoxLayout, QGridLay
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
+import itertools
+
+def generate_task_combinations(repeat_num=1):
+    objects = ["red box", "white box", "yellow box"]
+    all_combinations = []
+    
+    for target in objects:
+        for perm in itertools.permutations(objects):
+            combo = (target, perm)
+            for _ in range(repeat_num):
+                all_combinations.append(combo)
+    
+    return all_combinations
+
+# Example usage:
+# combinations = generate_task_combinations(repeat_num=3)
 
 class RenderThread(QThread):
     image_signal = pyqtSignal(np.ndarray)
     reward_signal = pyqtSignal(np.ndarray)  # Signal to send reward values
     file_signal = pyqtSignal(str)
-    instruction_signal = pyqtSignal(str)  # New signal for instruction
+    instruction_signal = pyqtSignal(str)  # Signal for instruction
+    combination_signal = pyqtSignal(str)  # New signal for current combination info
 
-    def __init__(self, env, physics, height, width, gello, num_episode, save_dir):
+    def __init__(self, env, physics, height, width, gello, num_episode, save_dir, task_combinations=None):
         super().__init__()
         self.env = env
         self.task = env.task
@@ -38,13 +55,25 @@ class RenderThread(QThread):
         self.terminate_signal = False
         self.episode = []
         self.episode_action = []
+        self.task_combinations = task_combinations  # Store the task combinations
+        self.current_combination = None  # Current combination being used
 
     def run(self):
-        while self.running:
+        while self.running and self.episode_count < self.num_episode:
             if not self.reset_flag:
                 self.save_demo()  
                 self.reset_flag = True
                 self.terminate_signal = False
+                
+            # Set the next combination if available
+            if self.task_combinations and self.episode_count < len(self.task_combinations):
+                self.current_combination = self.task_combinations[self.episode_count]
+                # Set the combination in the task if it supports it
+                if hasattr(self.task, 'set_combination'):
+                    self.task.set_combination(self.current_combination)
+                    combination_info = f"Target: {self.current_combination[0]}, Order: {' -> '.join(self.current_combination[1])}"
+                    self.combination_signal.emit(combination_info)
+            
             ts = self.env.reset()
             self.episode = [ts]
             self.episode_action = []
@@ -149,7 +178,17 @@ class RenderThread(QThread):
         if self.terminate_signal:
             print('failed, not saving demos')
             return
+        
         num = self.episode_count
+        
+        # Add combination information to the file name if available
+        if self.current_combination:
+            target_obj = self.current_combination[0]
+            # Create a more descriptive filename with the combination information
+            dataset_path = os.path.join(self.save_dir, f'episode_{num}_target_{target_obj}.hdf5')
+        else:
+            dataset_path = os.path.join(self.save_dir, f'episode_{num}.hdf5')
+        
         data_dict = {
             '/observations/states/qpos': [],
             '/observations/states/qvel': [],
@@ -198,8 +237,11 @@ class RenderThread(QThread):
                 data_dict['/actions/ee_quat_pos'].append(action1)
                 data_dict['/actions/ee_6d_pos'].append(action2)    
         
-        dataset_path = os.path.join(self.save_dir, f'episode_{num}.hdf5')
-  
+        # Add combination metadata to the dataset if available
+        if self.current_combination:
+            data_dict['/metadata/target_object'] = [self.current_combination[0]] * max_timesteps
+            data_dict['/metadata/object_order'] = [','.join(self.current_combination[1])] * max_timesteps
+        
         with h5py.File(dataset_path, 'w', rdcc_nbytes=1024 ** 2 * 2) as root:
             obs = root.create_group('observations')
             state = obs.create_group('states')
@@ -227,6 +269,12 @@ class RenderThread(QThread):
                 action_ee_quat_pos = action.create_dataset('ee_quat_pos', (max_timesteps, data_dict['/actions/ee_quat_pos'][0].shape[0]))
                 action_ee_6d_pos = action.create_dataset('ee_6d_pos', (max_timesteps, data_dict['/actions/ee_6d_pos'][0].shape[0]))
 
+            # Add metadata if it exists
+            if '/metadata/target_object' in data_dict:
+                metadata = root.create_group('metadata')
+                target = metadata.create_dataset('target_object', (max_timesteps,), dtype=h5py.string_dtype(encoding='utf-8'))
+                order = metadata.create_dataset('object_order', (max_timesteps,), dtype=h5py.string_dtype(encoding='utf-8'))
+            
             for name, array in data_dict.items():
                 root[name][...] = array
         print(f'Saved {dataset_path}')
@@ -241,7 +289,7 @@ class RenderThread(QThread):
 
 
 class SimulationUI(QWidget):
-    def __init__(self, task_name, action_type, num_episodes, save_dir, width=1600, height=900):
+    def __init__(self, task_name, action_type, num_episodes, save_dir, width=1600, height=900, task_combinations=None):
         super().__init__()
         self.task_name = task_name
         self.num_episodes = num_episodes
@@ -250,6 +298,7 @@ class SimulationUI(QWidget):
         os.makedirs(self.save_dir, exist_ok=True)
         self.width = width
         self.height = height
+        self.task_combinations = task_combinations
 
         self.gello = GelloEnv()
         self.env = tabletop.env(task_name, self.action_type)
@@ -265,12 +314,14 @@ class SimulationUI(QWidget):
             self.width, 
             self.gello,
             self.num_episodes,
-            self.save_dir
+            self.save_dir,
+            self.task_combinations
         )
         self.render_thread.image_signal.connect(self.display_image)
         self.render_thread.reward_signal.connect(self.set_current_reward)
         self.render_thread.file_signal.connect(self.set_current_file)
-        self.render_thread.instruction_signal.connect(self.set_instruction)  # Connect new signal
+        self.render_thread.instruction_signal.connect(self.set_instruction)
+        self.render_thread.combination_signal.connect(self.set_combination_info)  # Connect new signal
         self.render_thread.start()
 
     def initUI(self):
@@ -302,9 +353,17 @@ class SimulationUI(QWidget):
         self.text_label_file.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
         self.text_label_file.setGeometry(0, 160, self.width, 80)
 
+        # Add a label for combination info
+        self.combination_label = QLabel("Current Combination: None", self)
+        self.combination_label.setAlignment(Qt.AlignCenter)
+        self.combination_label.setFont(QFont("Arial", 25, QFont.Bold))
+        self.combination_label.setStyleSheet("color: white; background-color: rgba(0, 0, 0, 255);")
+        self.combination_label.setGeometry(0, 240, self.width, 60)
+
         self.layout.addWidget(self.text_label)
         self.layout.addWidget(self.instruction_label)
         self.layout.addWidget(self.text_label_file)
+        self.layout.addWidget(self.combination_label)
         self.layout.addWidget(self.image_label, stretch=3)
         self.setLayout(self.layout)
 
@@ -331,6 +390,10 @@ class SimulationUI(QWidget):
         """Updates the instruction label."""
         self.instruction_label.setText(f"Instruction: {instruction}")
     
+    def set_combination_info(self, info):
+        """Updates the combination info label."""
+        self.combination_label.setText(f"Current Combination: {info}")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -338,10 +401,31 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--action_type', action='store', type=str, default='ee_quat_pos', required=False)
     parser.add_argument('-n', '--num_episodes', action='store', type=int, default=1)
     parser.add_argument('-d', '--save_dir', action='store', type=str, default='datasets')
+    parser.add_argument('-r', '--repeat', action='store', type=int, default=1, help='Number of times to repeat each task combination')
     
     args = parser.parse_args()
     
+    task_combinations = None
+    
+    # If it's the box into pot task, generate combinations
+    if args.task_name == 'aloha_put_into_pot':
+        objects = ['squirrel', 'shark', 'cow']
+        task_combinations = []
+        
+        # Generate combinations - target object and placement order
+        for target in objects:
+            for perm in itertools.permutations(objects):
+                combo = (target, perm)
+                # Add the combination repeat times
+                for _ in range(args.repeat):
+                    task_combinations.append(combo)
+        
+        # Adjust num_episodes if task_combinations is used
+        if task_combinations:
+            args.num_episodes = len(task_combinations)
+            print(f"Generated {len(task_combinations)} combinations. Setting num_episodes to match.")
+    
     app = QApplication(sys.argv)
-    ui = SimulationUI(args.task_name, args.action_type, args.num_episodes, args.save_dir)
+    ui = SimulationUI(args.task_name, args.action_type, args.num_episodes, args.save_dir, task_combinations=task_combinations)
     ui.show()
     sys.exit(app.exec_())

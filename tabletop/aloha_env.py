@@ -73,6 +73,18 @@ class BoxIntoPot(AlohaTask):
         self.add_object('white box', 'Pepsi_Caffeine_Free_Diet_12_CT', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
         self.add_object('red box', 'Pepsi_Cola_Wild_Cherry_Diet_12_12_fl_oz_355_ml_cans_144_fl_oz_426_lt', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[0.3, 0.3, 0.3], mass=0.1)
 
+    def set_combination(self, combination):
+        """
+        Set a specific combination for this task.
+        combination: tuple of (target_object, object_order)
+        """
+        if combination:
+            self.use_fixed_combination = True
+            self.fixed_target_object = combination[0]
+            self.fixed_object_order = combination[1]
+            # Update instruction immediately
+            self.instruction = self.instruction_template.format(object=self.fixed_target_object)
+
     def initialize_episode(self, physics):
         self.set_object_pose(physics, 'pot', pos=self.pot_pose, rpy=[0, 0, 0])
         objects_poses = [
@@ -81,11 +93,34 @@ class BoxIntoPot(AlohaTask):
             [0.0, -0.25, 0.05],
         ]
         
-        for obj in self.objects:
-            random_index = np.random.randint(0, len(objects_poses))
-            chosen_pose = objects_poses.pop(random_index)
-            self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[0, 0, 0])
-        self.target_object = self.objects[np.random.randint(0, len(self.objects))]
+        # Use fixed combination if available, otherwise randomize
+        if self.use_fixed_combination:
+            self.target_object = self.fixed_target_object
+            
+            # Place objects according to the specified order
+            objects_poses = [
+                [0, 0, 0.05],
+                [-0.15, -0.15, 0.05],
+                [0.15, -0.15, 0.05],
+            ]
+            
+            for i, obj in enumerate(self.fixed_object_order):
+                if i < len(objects_poses):
+                    self.set_object_pose(physics, obj, pos=objects_poses[i], rpy=[0, 0, 0])
+        else:
+            # Original random logic
+            objects_poses = [
+                [0, 0, 0.05],
+                [-0.15, -0.15, 0.05],
+                [0.15, -0.15, 0.05],
+            ]
+            
+            for obj in self.objects:
+                random_index = np.random.randint(0, len(objects_poses))
+                chosen_pose = objects_poses.pop(random_index)
+                self.set_object_pose(physics, obj, pos=chosen_pose, rpy=[0, 0, 0])
+            self.target_object = self.objects[np.random.randint(0, len(self.objects))]
+            
         self.instruction = self.instruction_template.format(object=self.target_object)
         super().initialize_episode(physics) ## always last
 
