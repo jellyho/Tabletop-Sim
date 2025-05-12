@@ -2,9 +2,11 @@ import numpy as np
 from random import sample
 from tabletop.constants import *
 from tabletop.utils import *
-from tabletop.wrappers import GSOWrapper
 from tabletop.aloha_env_base import AlohaTask
 from scipy.spatial.transform import Rotation as R
+import dm_env
+
+import itertools
 
 class DishDrainer(AlohaTask):
     def __init__(self, random=None):
@@ -62,6 +64,7 @@ class BoxIntoPot(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
 
+        self.combination_list = self._generate_combination(num_repeat=1)
         self.instruction_template = "Put the {object} into the {pot}"
         self.instruction = None
         self.objects = ['brown box', 'white box', 'yellow box']
@@ -84,6 +87,31 @@ class BoxIntoPot(AlohaTask):
         self.add_object('brown box', 'Perricone_MD_Neuropeptide_Firming_Moisturizer', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.6, 0.7], mass=0.1)
         self.add_object('white box', 'Perricone_MD_Firming_Neck_Therapy_Treatment', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.5, 0.6], mass=0.1)
         self.add_object('yellow box', 'Ultra_JarroDophilus', pos=[-0.2, -0.2, 0.01], rpy=[0, 0, 0], scale=[1.3, 0.6, 0.4], mass=0.1)
+
+    def _generate_combination(self, num_repeat:int = 1):
+        objects = ["yellow box", "white box", "brown box"]
+        pots = ["blue pot", "green pot"]
+        all_combinations = []
+        
+        for pot in pots:
+            for target in objects:
+                for perm in itertools.permutations(objects):
+                    combo = (target, pot, perm)
+                    for _ in range(num_repeat):
+                        all_combinations.append(combo)
+        
+        return all_combinations
+    
+    def benchmark_init(self, physics, idx):
+        comb = self.combination_list[idx % len(self.combination_list)]
+        self.set_combination(comb)
+        self.initialize_episode(physics)
+        return dm_env.TimeStep(
+            step_type=dm_env.StepType.FIRST,
+            reward=None,
+            discount=None,
+            observation=self.get_observation(physics)
+        )
 
     def set_combination(self, combination):
         """
