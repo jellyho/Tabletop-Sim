@@ -17,23 +17,6 @@ from PyQt5.QtGui import QPixmap, QImage, QFont
 from PyQt5.QtCore import QThread, pyqtSignal, QTimer
 import itertools
 
-def generate_task_combinations(repeat_num=5):
-    objects = ["yellow box", "white box", "brown box"]
-    pots = ["blue pot", "green pot"]  # Updated to match pots from BoxIntoPot
-    all_combinations = []
-    
-    # Rearranging the loop structure - first by pot, then by target object
-    for pot in pots:
-        for target in objects:
-            for perm in itertools.permutations(objects):
-                combo = (target, pot, perm)
-                for _ in range(repeat_num):
-                    all_combinations.append(combo)
-    
-    return all_combinations
-
-# Example usage:
-combinations = generate_task_combinations(repeat_num=3)
 
 class RenderThread(QThread):
     image_signal = pyqtSignal(np.ndarray)
@@ -281,7 +264,7 @@ class RenderThread(QThread):
 
 
 class SimulationUI(QWidget):
-    def __init__(self, task_name, action_type, num_episodes, save_dir, width=1600, height=900, task_combinations=None):
+    def __init__(self, task_name, action_type, num_episodes, save_dir, width=1600, height=900):
         super().__init__()
         self.task_name = task_name
         self.num_episodes = num_episodes
@@ -290,10 +273,10 @@ class SimulationUI(QWidget):
         os.makedirs(self.save_dir, exist_ok=True)
         self.width = width
         self.height = height
-        self.task_combinations = task_combinations
 
         self.gello = GelloEnv()
         self.env = tabletop.env(task_name, self.action_type)
+        self.task_combinations = self.env.task._generate_combination(repeat_num=args.repeat)
         self.physics = self.env.physics
         self.physics.model.vis.global_.offwidth = self.width
         self.physics.model.vis.global_.offheight = self.height
@@ -383,12 +366,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--repeat', action='store', type=int, default=5, help='Number of times to repeat each task combination')
     
     args = parser.parse_args()
-    
-    task_combinations = generate_task_combinations(args.repeat)
-    for i, task in enumerate(task_combinations):
-        print(f"comb {i}: {task}")
-
     app = QApplication(sys.argv)
-    ui = SimulationUI(args.task_name, args.action_type, args.num_episodes, args.save_dir, task_combinations=task_combinations)
+    ui = SimulationUI(args.task_name, args.action_type, args.num_episodes, args.save_dir)
     ui.show()
     sys.exit(app.exec_())
