@@ -414,7 +414,7 @@ ALOHA_TASK_CONFIGS = {
         'task_class': BoxIntoPot,
         'episode_len': 10,
     },
-    'aloha_box_into_pot': {
+    'aloha_box_into_pot_easy': {
         'task_class': BoxIntoPotEasy,
         'episode_len': 10,
     },
