@@ -276,7 +276,9 @@ class SimulationUI(QWidget):
 
         self.gello = GelloEnv()
         self.env = tabletop.env(task_name, self.action_type)
-        self.task_combinations = self.env.task._generate_combination(repeat_num=args.repeat)
+        self.task_combinations = self.env.task._generate_combination(args.repeat)
+        print(f"unique task combination: {len(self.task_combinations) // args.repeat}")
+        print(f"total combinations for demo collection: {len(self.task_combinations)}")
         self.physics = self.env.physics
         self.physics.model.vis.global_.offwidth = self.width
         self.physics.model.vis.global_.offheight = self.height
