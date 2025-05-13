@@ -176,6 +176,18 @@ class BoxIntoPot(AlohaTask):
         # print(f"inst: {self.instruction}\treward: {target_in_pot and others_not_in_pot}")
         return super().get_reward(physics, reward_condition_list) ### always first
 
+class BoxIntoPotEasy(BoxIntoPot):
+    def _generate_combination(self, num_repeat: int = 1):
+        objects = ["yellow box", "white box", "brown box"]
+        pots = ["blue pot", "green pot"]
+        all_combinations = []
+        for pot in pots:
+            for target in objects:
+                combo = (target, pot, tuple(objects))
+                for _ in range(num_repeat):
+                    all_combinations.append(combo)
+        return all_combinations
+
 class ShoesTable(AlohaTask):
     def __init__(self, random=None):
         super().__init__(random=random, single_arm=False) ## always first
@@ -400,6 +412,10 @@ ALOHA_TASK_CONFIGS = {
     },
     'aloha_box_into_pot': {
         'task_class': BoxIntoPot,
+        'episode_len': 10,
+    },
+    'aloha_box_into_pot': {
+        'task_class': BoxIntoPotEasy,
         'episode_len': 10,
     },
     'aloha_dish_drainer_new': {
