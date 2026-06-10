@@ -273,12 +273,13 @@ class LiftBox(AlohaTask):
         rotation_rpy = R.from_quat(self.get_object_pose(physics, 'box')[1], scalar_first=True).as_euler('XYZ')
         rotation_rpy = list(rotation_rpy)
         is_box_float = self.get_object_pose(physics, 'box')[0][2] > 0.1
-        is_rotation_okay = abs(abs(rotation_rpy[2]) - np.pi) <= 0.15 and abs(rotation_rpy[0]) < 0.1 and abs(rotation_rpy[1]) < 0.1
+        # Success = box lifted upright with its front facing the camera (yaw ~ 0).
+        is_rotation_okay = abs(rotation_rpy[0]) < 0.1 and abs(rotation_rpy[1]) < 0.1 and abs(rotation_rpy[2]) < 0.15
         reward_condition_list = [
             [is_box_float and is_rotation_okay, 10],
         ]
         return super().get_reward(physics, reward_condition_list)
-    
+
 ############# Generalization tasks #############
 class DishDrainerNew(AlohaTask):
     """
@@ -370,7 +371,8 @@ class LiftBoxNew(AlohaTask):
         rotation_rpy = R.from_quat(self.get_object_pose(physics, 'box')[1], scalar_first=True).as_euler('XYZ')
         rotation_rpy = list(rotation_rpy)
         is_box_float = self.get_object_pose(physics, 'box')[0][2] > 0.1
-        is_rotation_okay = abs(abs(rotation_rpy[2]) - np.pi) <= 0.15 and abs(rotation_rpy[0]) < 0.1 and abs(rotation_rpy[1]) < 0.1
+        # Success = box lifted upright with its front facing the camera (yaw ~ 0).
+        is_rotation_okay = abs(rotation_rpy[0]) < 0.1 and abs(rotation_rpy[1]) < 0.1 and abs(rotation_rpy[2]) < 0.15
         reward_condition_list = [
             [is_box_float and is_rotation_okay, 10],
         ]
